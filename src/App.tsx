@@ -662,7 +662,12 @@ export default function App() {
           </div>
 
           {/* Floating Mobile Bottom Navigation Bar */}
-          <nav className="h-14 bg-slate-900/90 border-t border-slate-900 backdrop-blur-md shrink-0 flex items-center justify-around px-4 z-40 select-none">
+          {/* `justify-around` distributed space around three items of unequal
+              width ("Koleksiyon" is wider than "Yedekler"), which pushed the
+              centre + button ~9px off the screen's centre axis. A 3-column grid
+              gives each item an equal cell, so the + lands exactly on centre —
+              aligned with the centred "Kapat" button of every bottom sheet. */}
+          <nav className="h-14 bg-slate-900/90 border-t border-slate-900 backdrop-blur-md shrink-0 grid grid-cols-3 items-center px-4 z-40 select-none">
             <button
               onClick={() => {
                 navigateHome();
@@ -679,7 +684,7 @@ export default function App() {
 
             <button
               onClick={handleAddNewClick}
-              className="flex flex-col items-center justify-center -translate-y-3 shrink-0 cursor-pointer"
+              className="flex flex-col items-center justify-center -translate-y-1.5 shrink-0 cursor-pointer"
               title="Şarkı Ekle"
             >
               <div className="w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 flex items-center justify-center shadow-lg shadow-emerald-500/20 transition-all">
@@ -712,16 +717,18 @@ export default function App() {
                   animate={{ opacity: 0.5 }}
                   exit={{ opacity: 0 }}
                   onClick={handleCloseDrawer}
-                  className="absolute inset-0 bg-slate-950 z-45"
+                  className="absolute inset-x-0 top-0 bottom-14 bg-slate-950 z-45"
                 />
 
-                {/* Drawer Content */}
+                {/* Drawer Content — stops at the nav bar's top edge (bottom-14)
+                    rather than covering it, so the centre + button stays fully
+                    visible and lines up under the sheet's "Kapat" button. */}
                 <motion.div
                   initial={{ y: '100%' }}
                   animate={{ y: 0 }}
                   exit={{ y: '100%' }}
                   transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-                  className="absolute bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 rounded-t-[28px] z-50 p-6 flex flex-col shadow-2xl"
+                  className="absolute bottom-14 left-0 right-0 bg-slate-900 border-t border-slate-800 rounded-t-[28px] z-50 p-6 flex flex-col shadow-2xl"
                 >
                   {/* Pull handle bar */}
                   <div className="w-12 h-1.5 bg-slate-700/50 rounded-full mx-auto mb-4" />

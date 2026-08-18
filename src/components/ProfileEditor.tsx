@@ -48,7 +48,7 @@ export default function ProfileEditor({ profile, onSave, onClose }: ProfileEdito
         animate={{ opacity: 0.5 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-slate-950 z-45"
+        className="absolute inset-x-0 top-0 bottom-14 bg-slate-950 z-45"
       />
 
       {/* Drawer Content */}
@@ -57,7 +57,7 @@ export default function ProfileEditor({ profile, onSave, onClose }: ProfileEdito
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-        className="absolute bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 rounded-t-[28px] z-50 p-6 flex flex-col shadow-2xl"
+        className="absolute bottom-14 left-0 right-0 bg-slate-900 border-t border-slate-800 rounded-t-[28px] z-50 p-6 flex flex-col shadow-2xl"
       >
         {/* Pull handle bar */}
         <div className="w-12 h-1.5 bg-slate-700/50 rounded-full mx-auto mb-4" />
