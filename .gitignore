@@ -1,0 +1,15 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Editor / IDE
+.idea/
+.vscode/
+
+# Cloud-assistant cleanup scratch folder (old build artifacts staged for manual deletion)
+_to_delete/

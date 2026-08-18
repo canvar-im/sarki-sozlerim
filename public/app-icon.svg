@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10B981" />
+      <stop offset="1" stop-color="#14B8A6" />
+    </linearGradient>
+    <linearGradient id="note" x1="170" y1="154" x2="352" y2="358" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC" />
+      <stop offset="1" stop-color="#BAE6FD" />
+    </linearGradient>
+  </defs>
+  <rect x="32" y="32" width="448" height="448" rx="112" fill="url(#bg)" />
+  <rect x="84" y="84" width="344" height="344" rx="88" fill="#0F172A" fill-opacity="0.28" stroke="rgba(255,255,255,0.12)" stroke-width="6" />
+  <path d="M202 130C202 123.373 207.373 118 214 118H322C329.732 118 336 124.268 336 132V278.5C336 302.076 316.828 321.248 293.252 321.248C269.676 321.248 250.504 302.076 250.504 278.5C250.504 254.924 269.676 235.752 293.252 235.752C299.515 235.752 305.425 237.097 310.8 239.511V150H228V344.5C228 368.076 208.828 387.248 185.252 387.248C161.676 387.248 142.504 368.076 142.504 344.5C142.504 320.924 161.676 301.752 185.252 301.752C191.515 301.752 197.425 303.097 202.8 305.511V130Z" fill="url(#note)" />
+  <circle cx="294" cy="278" r="18" fill="#0F172A" fill-opacity="0.5" />
+  <circle cx="186" cy="344" r="18" fill="#0F172A" fill-opacity="0.5" />
+</svg>

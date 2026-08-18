@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Şarkı Sözlerim</string>
+    <string name="title_activity_main">Şarkı Sözlerim</string>
+    <string name="package_name">com.sarkisozlerim.app</string>
+    <string name="custom_url_scheme">com.sarkisozlerim.app</string>
+</resources>

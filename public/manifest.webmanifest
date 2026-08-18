@@ -1,0 +1,18 @@
+{
+  "name": "Şarkı Sözlerim",
+  "short_name": "Sözlerim",
+  "description": "Şarkı sözleri, notlar ve dinleme bağlantıları için çevrim içi arşiv uygulaması.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#070b13",
+  "theme_color": "#070b13",
+  "icons": [
+    {
+      "src": "/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
