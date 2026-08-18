@@ -1,6 +1,6 @@
 import React from 'react';
-import { Song, SongFilter, GENRES, PLATFORMS } from '../types';
-import { Search, Heart, Music, SlidersHorizontal, ArrowUpDown, Tag, Plus, Disc } from 'lucide-react';
+import { Song, SongFilter, PLATFORMS } from '../types';
+import { Search, Heart, Music, ArrowUpDown, Plus, Disc } from 'lucide-react';
 
 interface SongListProps {
   songs: Song[];
@@ -77,19 +77,16 @@ export default function SongList({
     <div className="flex flex-col h-full bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
       {/* Header with quick search */}
       <div className="p-5 border-b border-slate-800/60 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg shrink-0">
               <Music className="w-5 h-5 animate-pulse" />
             </div>
-            <div>
-              <h2 className="text-md font-display font-bold text-slate-100">Koleksiyonum</h2>
-              <p className="text-2xs text-slate-400 font-medium">Toplam {songs.length} Şarkı Kayıtlı</p>
-            </div>
+            <p className="text-2xs text-slate-400 font-semibold truncate">{songs.length} şarkı kayıtlı</p>
           </div>
           <button
             onClick={onAddNewClick}
-            className="flex items-center gap-1 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-950 rounded-lg text-xs font-bold transition-all shadow-md shadow-emerald-500/5 cursor-pointer"
+            className="flex items-center gap-1 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-950 rounded-lg text-xs font-bold transition-all shadow-md shadow-emerald-500/5 cursor-pointer shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             Yeni Ekle
@@ -117,56 +114,52 @@ export default function SongList({
         </div>
       </div>
 
-      {/* Advanced Filters Drawer/Row */}
-      <div className="px-5 py-3 border-b border-slate-800/40 bg-slate-950/20 flex flex-wrap gap-2 items-center justify-between">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 max-w-full">
-          {/* Genre select pill */}
-          <select
-            value={filter.genre}
-            onChange={(e) => setFilter({ ...filter, genre: e.target.value })}
-            className="text-2xs bg-slate-950 border border-slate-800 hover:border-slate-700 px-2 py-1.5 rounded-lg text-slate-300 font-medium focus:outline-none"
+      {/* Filter Chips Row (scrollable) + Sort */}
+      <div className="px-5 py-3 border-b border-slate-800/40 bg-slate-950/20 flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 flex-1 min-w-0">
+          {/* "Tüm Etiketler" chip resets the tag filter */}
+          <button
+            onClick={() => setFilter({ ...filter, tag: '' })}
+            className={`shrink-0 text-2xs px-2.5 py-1.5 rounded-lg border font-medium transition-all cursor-pointer ${
+              filter.tag === ''
+                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-300'
+            }`}
           >
-            <option value="">Tüm Türler</option>
-            {GENRES.map((g) => (
-              <option key={g} value={g}>
-                {g}
-              </option>
-            ))}
-          </select>
+            Tüm Etiketler
+          </button>
 
-          {/* Tag select pill if tags exist */}
-          {allTags.length > 0 && (
-            <select
-              value={filter.tag}
-              onChange={(e) => setFilter({ ...filter, tag: e.target.value })}
-              className="text-2xs bg-slate-950 border border-slate-800 hover:border-slate-700 px-2 py-1.5 rounded-lg text-slate-300 font-medium focus:outline-none"
+          {/* One chip per existing tag */}
+          {allTags.map((t) => (
+            <button
+              key={t}
+              onClick={() => setFilter({ ...filter, tag: filter.tag === t ? '' : t })}
+              className={`shrink-0 text-2xs px-2.5 py-1.5 rounded-lg border font-medium transition-all cursor-pointer ${
+                filter.tag === t
+                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                  : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-300'
+              }`}
             >
-              <option value="">Tüm Etiketler</option>
-              {allTags.map((t) => (
-                <option key={t} value={t}>
-                  #{t}
-                </option>
-              ))}
-            </select>
-          )}
+              #{t}
+            </button>
+          ))}
 
-          {/* Favorite heart toggle button */}
+          {/* Favorites toggle chip */}
           <button
             onClick={() => setFilter({ ...filter, onlyFavorites: !filter.onlyFavorites })}
-            className={`p-1.5 rounded-lg border text-2xs font-semibold flex items-center gap-1 transition-all cursor-pointer ${
+            className={`shrink-0 flex items-center gap-1 text-2xs px-2.5 py-1.5 rounded-lg border font-semibold transition-all cursor-pointer ${
               filter.onlyFavorites
                 ? 'bg-rose-500/15 border-rose-500/30 text-rose-400'
-                : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-200'
+                : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-300'
             }`}
-            title="Sadece Favoriler"
           >
             <Heart className={`w-3.5 h-3.5 ${filter.onlyFavorites ? 'fill-rose-500 text-rose-400' : ''}`} />
-            <span className="hidden sm:inline">Favoriler</span>
+            Favoriler
           </button>
         </div>
 
         {/* Sorting Dropdown */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
           <select
             value={filter.sortBy}

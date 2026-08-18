@@ -46,3 +46,35 @@ body {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
+
+/* İzcilik/kamp ateşi teması: ambiyans için hafif bir alev parıltısı.
+   Sadece opacity + transform animasyonu (GPU'da ucuz, layout/repaint
+   tetiklemez) — sabit boyutlu blur'lu daireler, telefonda performansı
+   etkilemesin diye herhangi bir görsel/resim indirilmiyor. */
+@keyframes campfireFlicker {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+.campfire-glow {
+  animation: campfireFlicker 3.6s ease-in-out infinite;
+}
+
+.campfire-glow-slow {
+  animation: campfireFlicker 5s ease-in-out infinite;
+  animation-delay: 0.8s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campfire-glow,
+  .campfire-glow-slow {
+    animation: none;
+  }
+}

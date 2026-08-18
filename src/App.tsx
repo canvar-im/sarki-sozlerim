@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Song, SongFilter } from './types';
+import { Song, SongFilter, UserProfile } from './types';
 import { INITIAL_SONGS } from './data/initialSongs';
 import { normalizeSongs } from './utils/songUtils';
+import { loadProfile, saveProfile, getInitials, DEFAULT_PROFILE } from './utils/profile';
 import { APP_VERSION, BUILD_STAMP } from './version';
 import SongList from './components/SongList';
 import SongDetail from './components/SongDetail';
 import SongForm from './components/SongForm';
+import ProfileEditor from './components/ProfileEditor';
 import ErrorBoundary from './components/ErrorBoundary';
 import { App as CapacitorApp } from '@capacitor/app';
 import {
@@ -16,18 +18,20 @@ import {
   Upload,
   ArrowLeft,
   Info,
-  Disc,
   Library,
   Sparkles,
   FileMusic,
   SearchCheck,
   CheckCircle2,
   AlertCircle,
-  Settings
+  Settings,
+  User,
+  ChevronRight,
+  Flame
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-type Screen = 'list' | 'detail' | 'form' | 'drawer';
+type Screen = 'list' | 'detail' | 'form' | 'drawer' | 'profile';
 
 export default function App() {
   // Songs Database State
@@ -36,6 +40,20 @@ export default function App() {
 
   // Backup Drawer Open/Close State
   const [showBackupDrawer, setShowBackupDrawer] = useState(false);
+
+  // Profile State (name + photo, stored locally on-device only)
+  const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
+
+  useEffect(() => {
+    setProfile(loadProfile());
+  }, []);
+
+  const handleSaveProfile = (updated: UserProfile) => {
+    setProfile(updated);
+    saveProfile(updated);
+    showToast('Profil güncellendi.');
+  };
 
   // Filters State
   const [filter, setFilter] = useState<SongFilter>({
@@ -63,6 +81,7 @@ export default function App() {
   const applyScreen = useCallback((screen: Screen) => {
     if (screen === 'list') {
       setShowBackupDrawer(false);
+      setShowProfileEditor(false);
       setIsEditing(false);
       setEditingSong(null);
       setMobileView('list');
@@ -71,6 +90,7 @@ export default function App() {
 
     if (screen === 'detail') {
       setShowBackupDrawer(false);
+      setShowProfileEditor(false);
       setIsEditing(false);
       setEditingSong(null);
       setMobileView('detail');
@@ -79,13 +99,21 @@ export default function App() {
 
     if (screen === 'form') {
       setShowBackupDrawer(false);
+      setShowProfileEditor(false);
       setIsEditing(true);
       setMobileView('form');
       return;
     }
 
     if (screen === 'drawer') {
+      setShowProfileEditor(false);
       setShowBackupDrawer(true);
+      return;
+    }
+
+    if (screen === 'profile') {
+      setShowBackupDrawer(false);
+      setShowProfileEditor(true);
     }
   }, []);
 
@@ -415,6 +443,14 @@ export default function App() {
     setShowBackupDrawer(false);
   };
 
+  const handleCloseProfileEditor = () => {
+    if (showProfileEditor) {
+      goBack();
+      return;
+    }
+    setShowProfileEditor(false);
+  };
+
   return (
     <div className="min-h-[100dvh] bg-[#070b13] bg-radial-[at_top_right,_var(--tw-gradient-stops)] from-emerald-950/15 via-slate-950 to-slate-950 text-slate-100 font-sans flex flex-col items-center justify-center p-0 md:p-6 selection:bg-emerald-500/25 selection:text-emerald-300 overflow-hidden">
       
@@ -429,7 +465,18 @@ export default function App() {
 
       {/* App Shell: Becomes physical phone container on desktop, full-screen on mobile */}
       <div className="w-full h-[100dvh] md:h-[840px] md:max-w-[412px] md:rounded-[44px] md:border-[10px] md:border-slate-800 md:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] bg-slate-950 flex flex-col relative md:ring-1 md:ring-slate-700/50 overflow-hidden">
-        
+
+        {/* İzcilik kamp ateşi ambiyansı: sabit, GPU-ucuz bir parıltı katmanı.
+            Hiçbir görsel indirmiyor, sadece opacity/transform animasyonu
+            kullanıyor; App Main Workspace'in altında kalıyor, sadece alt
+            navigasyon çubuğu gibi yarı saydam/blur'lu alanlardan hafifçe
+            sızıyor. */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
+          <div className="campfire-glow absolute -bottom-16 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full bg-orange-500/15 blur-3xl" />
+          <div className="campfire-glow-slow absolute -bottom-6 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full bg-amber-400/20 blur-2xl" />
+          <Flame className="absolute bottom-2 left-1/2 -translate-x-1/2 w-10 h-10 text-orange-500/20" />
+        </div>
+
         {/* Smartphone Camera Notch & Speaker Bar (Desktop Only) */}
         <div className="hidden md:flex absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-800 rounded-b-2xl z-50 items-center justify-center gap-1.5 px-3">
           <div className="w-10 h-1 bg-slate-900 rounded-full" />
@@ -460,8 +507,13 @@ export default function App() {
                 </div>
                 <div>
                   <h1 className="text-sm font-display font-bold tracking-tight text-slate-100">
-                    Şarkı Sözlerim
+                    Koleksiyonum
                   </h1>
+                  {profile.name && (
+                    <p className="text-3xs text-slate-500 -mt-0.5 truncate max-w-[160px]">
+                      Hoş geldin, {profile.name.split(' ')[0]}
+                    </p>
+                  )}
                 </div>
               </div>
             ) : (
@@ -487,6 +539,28 @@ export default function App() {
               >
                 <Settings className="w-3.5 h-3.5" />
               </button>
+
+              {mobileView === 'list' && (
+                <button
+                  onClick={() => {
+                    navigateTo('profile');
+                  }}
+                  className="w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 flex items-center justify-center cursor-pointer shrink-0"
+                  title="Profilim"
+                >
+                  <span className="w-full h-full rounded-full overflow-hidden bg-slate-950 flex items-center justify-center">
+                    {profile.photo ? (
+                      <img src={profile.photo} alt="Profil" className="w-full h-full object-cover" />
+                    ) : profile.name ? (
+                      <span className="text-3xs font-display font-bold text-emerald-400">
+                        {getInitials(profile.name)}
+                      </span>
+                    ) : (
+                      <User className="w-3.5 h-3.5 text-slate-500" />
+                    )}
+                  </span>
+                </button>
+              )}
             </div>
           </header>
 
@@ -545,10 +619,10 @@ export default function App() {
                   ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-slate-900 border border-slate-850 rounded-2xl m-4 overflow-y-auto">
                       <div className="relative mb-5 shrink-0">
-                        <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center text-emerald-400 relative z-10 border border-emerald-500/25">
-                          <Disc className="w-8 h-8 animate-[spin_8s_linear_infinite]" />
+                        <div className="w-16 h-16 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-400 relative z-10 border border-orange-500/25">
+                          <Flame className="w-8 h-8" />
                         </div>
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-emerald-500/5 rounded-full filter blur-xl animate-pulse" />
+                        <div className="campfire-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-orange-500/10 rounded-full filter blur-xl" />
                       </div>
 
                       <h3 className="text-md font-display font-bold text-slate-100">
@@ -660,6 +734,34 @@ export default function App() {
                     Şarkı arşivinizi güvende tutmak için yedek alın veya daha önce aldığınız yedekleri geri yükleyin.
                   </p>
 
+                  <button
+                    onClick={() => {
+                      navigateTo('profile');
+                    }}
+                    className="w-full flex items-center gap-3 p-3 mb-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500/30 transition-all cursor-pointer"
+                  >
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 flex items-center justify-center shrink-0">
+                      <div className="w-full h-full rounded-full overflow-hidden bg-slate-950 flex items-center justify-center">
+                        {profile.photo ? (
+                          <img src={profile.photo} alt="Profil" className="w-full h-full object-cover" />
+                        ) : profile.name ? (
+                          <span className="text-xs font-display font-bold text-emerald-400">
+                            {getInitials(profile.name)}
+                          </span>
+                        ) : (
+                          <User className="w-5 h-5 text-slate-500" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-left flex-1 min-w-0">
+                      <p className="text-xs font-bold text-slate-100 truncate">
+                        {profile.name || 'İsim eklenmedi'}
+                      </p>
+                      <p className="text-3xs text-slate-500">Profili düzenle</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-600 shrink-0" />
+                  </button>
+
                   <div className="space-y-2.5">
                     <button
                       onClick={() => {
@@ -691,20 +793,20 @@ export default function App() {
 
                     <button
                       onClick={() => {
-                        if (confirm('Tüm mevcut şarkılarınız silinecek ve örnek şarkılar yüklenecektir. Emin misiniz?')) {
+                        if (confirm('Tüm mevcut şarkılarınız silinecek ve fabrika verileri yüklenecektir. Emin misiniz?')) {
                           saveToStorage(INITIAL_SONGS);
                           if (INITIAL_SONGS.length > 0) {
                             setActiveSongId(INITIAL_SONGS[0].id);
                           }
                           handleCloseDrawer();
-                          showToast('Örnek şarkılar başarıyla geri yüklendi.');
+                          showToast('Fabrika verileri başarıyla yüklendi.');
                         }
                       }}
                       className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 hover:bg-slate-950/80 transition-all font-semibold text-xs text-slate-300 cursor-pointer"
                     >
                       <span className="flex items-center gap-2">
                         <Sparkles className="w-4 h-4 text-emerald-500" />
-                        Örnek Verileri Geri Yükle
+                        Fabrika Verilerine Sıfırla
                       </span>
                     </button>
                   </div>
@@ -724,6 +826,17 @@ export default function App() {
                   </p>
                 </motion.div>
               </>
+            )}
+          </AnimatePresence>
+
+          {/* Profile Editor Sheet */}
+          <AnimatePresence>
+            {showProfileEditor && (
+              <ProfileEditor
+                profile={profile}
+                onSave={handleSaveProfile}
+                onClose={handleCloseProfileEditor}
+              />
             )}
           </AnimatePresence>
 

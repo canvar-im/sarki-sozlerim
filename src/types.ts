@@ -19,6 +19,11 @@ export interface Song {
   updatedAt: number;
 }
 
+export interface UserProfile {
+  name: string;
+  photo: string | null; // base64 data URL, resized/compressed client-side
+}
+
 export interface SongFilter {
   searchQuery: string;
   genre: string;
