@@ -3,5 +3,5 @@
 // the fastest way to confirm an install/update actually took effect, since
 // file-transfer methods like WhatsApp can silently reopen a stale APK with
 // the same filename instead of the newly sent one.
-export const APP_VERSION = '1.4.3';
-export const BUILD_STAMP = '2026-08-18 13:56 UTC';
+export const APP_VERSION = '1.5.0';
+export const BUILD_STAMP = '2026-08-18 18:34 UTC';

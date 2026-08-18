@@ -3,7 +3,7 @@ import { Song, SongFilter, UserProfile } from './types';
 import { INITIAL_SONGS } from './data/initialSongs';
 import { normalizeSongs } from './utils/songUtils';
 import { loadProfile, saveProfile, getInitials, DEFAULT_PROFILE } from './utils/profile';
-import { APP_VERSION, BUILD_STAMP } from './version';
+import { APP_VERSION } from './version';
 import SongList from './components/SongList';
 import SongDetail from './components/SongDetail';
 import SongForm from './components/SongForm';
@@ -822,7 +822,7 @@ export default function App() {
                       installed APK actually took effect on a device, instead
                       of silently reopening an old cached/stale build. */}
                   <p className="text-center text-3xs font-mono text-slate-600 mt-4 select-text">
-                    Sürüm {APP_VERSION} · {BUILD_STAMP}
+                    Sürüm {APP_VERSION}
                   </p>
                 </motion.div>
               </>

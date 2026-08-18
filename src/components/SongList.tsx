@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Song, SongFilter, PLATFORMS } from '../types';
-import { Search, Heart, Music, ArrowUpDown, Plus, Disc } from 'lucide-react';
+import { Search, Heart, Music, ArrowUpDown, Plus, Disc, ChevronDown, Check, Tags } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface SongListProps {
   songs: Song[];
@@ -11,6 +12,13 @@ interface SongListProps {
   onAddNewClick: () => void;
 }
 
+const SORT_OPTIONS: { value: SongFilter['sortBy']; label: string }[] = [
+  { value: 'createdAt-desc', label: 'En Yeni Eklenen' },
+  { value: 'createdAt-asc', label: 'En Eski Eklenen' },
+  { value: 'title-asc', label: 'A-Z (Şarkı Adı)' },
+  { value: 'artist-asc', label: 'A-Z (Sanatçı)' }
+];
+
 export default function SongList({
   songs,
   activeSongId,
@@ -19,6 +27,9 @@ export default function SongList({
   setFilter,
   onAddNewClick
 }: SongListProps) {
+  const [showTagModal, setShowTagModal] = useState(false);
+  const [showSortModal, setShowSortModal] = useState(false);
+
   // Extract all unique tags across all songs for filtering
   const allTags = Array.from(
     new Set(songs.flatMap((song) => song.tags || []))
@@ -74,7 +85,7 @@ export default function SongList({
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
+    <div className="relative flex flex-col h-full bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden shadow-xl">
       {/* Header with quick search */}
       <div className="p-5 border-b border-slate-800/60 space-y-4">
         <div className="flex items-center justify-between gap-3">
@@ -114,64 +125,42 @@ export default function SongList({
         </div>
       </div>
 
-      {/* Filter Chips Row (scrollable) + Sort */}
-      <div className="px-5 py-3 border-b border-slate-800/40 bg-slate-950/20 flex items-center gap-2">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 flex-1 min-w-0">
-          {/* "Tüm Etiketler" chip resets the tag filter */}
-          <button
-            onClick={() => setFilter({ ...filter, tag: '' })}
-            className={`shrink-0 text-2xs px-2.5 py-1.5 rounded-lg border font-medium transition-all cursor-pointer ${
-              filter.tag === ''
-                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
-                : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-300'
-            }`}
-          >
-            Tüm Etiketler
-          </button>
+      {/* Filter Row — two exactly-equal halves so the labels split the row down
+          the middle and always fit the phone width (no horizontal scrolling).
+          Both open a bottom sheet; the favourites toggle now lives inside the
+          tag sheet instead of competing for space here. */}
+      <div className="px-4 py-2.5 border-b border-slate-800/40 bg-slate-950/20 grid grid-cols-2 gap-2">
+        {/* Tag filter trigger */}
+        <button
+          onClick={() => setShowTagModal(true)}
+          className={`min-w-0 flex items-center gap-1.5 px-3 py-2 rounded-xl border text-2xs font-semibold transition-all cursor-pointer active:scale-[0.98] ${
+            filter.tag || filter.onlyFavorites
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+              : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-300'
+          }`}
+        >
+          {filter.onlyFavorites && !filter.tag ? (
+            <Heart className="w-3.5 h-3.5 shrink-0 fill-rose-500 text-rose-400" />
+          ) : (
+            <Tags className="w-3.5 h-3.5 shrink-0 opacity-70" />
+          )}
+          <span className="truncate flex-1 text-left">
+            {filter.tag ? `#${filter.tag}` : filter.onlyFavorites ? 'Favoriler' : 'Tüm Etiketler'}
+          </span>
+          <ChevronDown className="w-3.5 h-3.5 shrink-0 opacity-60" />
+        </button>
 
-          {/* One chip per existing tag */}
-          {allTags.map((t) => (
-            <button
-              key={t}
-              onClick={() => setFilter({ ...filter, tag: filter.tag === t ? '' : t })}
-              className={`shrink-0 text-2xs px-2.5 py-1.5 rounded-lg border font-medium transition-all cursor-pointer ${
-                filter.tag === t
-                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
-                  : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-300'
-              }`}
-            >
-              #{t}
-            </button>
-          ))}
-
-          {/* Favorites toggle chip */}
-          <button
-            onClick={() => setFilter({ ...filter, onlyFavorites: !filter.onlyFavorites })}
-            className={`shrink-0 flex items-center gap-1 text-2xs px-2.5 py-1.5 rounded-lg border font-semibold transition-all cursor-pointer ${
-              filter.onlyFavorites
-                ? 'bg-rose-500/15 border-rose-500/30 text-rose-400'
-                : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-300'
-            }`}
-          >
-            <Heart className={`w-3.5 h-3.5 ${filter.onlyFavorites ? 'fill-rose-500 text-rose-400' : ''}`} />
-            Favoriler
-          </button>
-        </div>
-
-        {/* Sorting Dropdown */}
-        <div className="flex items-center gap-1 shrink-0">
-          <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
-          <select
-            value={filter.sortBy}
-            onChange={(e) => setFilter({ ...filter, sortBy: e.target.value as any })}
-            className="text-2xs bg-transparent border-none text-slate-400 font-medium cursor-pointer focus:outline-none focus:ring-0 pr-6 py-1"
-          >
-            <option value="createdAt-desc" className="bg-slate-900">En Yeni Eklenen</option>
-            <option value="createdAt-asc" className="bg-slate-900">En Eski Eklenen</option>
-            <option value="title-asc" className="bg-slate-900">A-Z (Şarkı Adı)</option>
-            <option value="artist-asc" className="bg-slate-900">A-Z (Sanatçı)</option>
-          </select>
-        </div>
+        {/* Sort trigger */}
+        <button
+          onClick={() => setShowSortModal(true)}
+          className="min-w-0 flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-800 bg-slate-950 hover:border-slate-700 text-2xs font-semibold text-slate-300 transition-all cursor-pointer active:scale-[0.98]"
+        >
+          <ArrowUpDown className="w-3.5 h-3.5 shrink-0 opacity-70" />
+          <span className="truncate flex-1 text-left">
+            {SORT_OPTIONS.find((o) => o.value === filter.sortBy)?.label}
+          </span>
+          <ChevronDown className="w-3.5 h-3.5 shrink-0 opacity-60" />
+        </button>
       </div>
 
       {/* Song List Content */}
@@ -254,6 +243,165 @@ export default function SongList({
           </div>
         )}
       </div>
+
+      {/* Tag Picker Modal */}
+      <AnimatePresence>
+        {showTagModal && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowTagModal(false)}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs z-40 cursor-pointer"
+            />
+
+            {/* Slide-up Sheet */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="absolute bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 rounded-t-[28px] z-50 p-6 flex flex-col shadow-2xl max-h-[75dvh] select-none"
+            >
+              {/* Pull handle bar */}
+              <div className="w-12 h-1.5 bg-slate-700/50 rounded-full mx-auto mb-4 shrink-0" />
+
+              <h3 className="text-sm font-display font-bold text-slate-100 flex items-center gap-2 mb-4 shrink-0">
+                <Tags className="w-4 h-4 text-emerald-400" />
+                Etikete Göre Filtrele
+              </h3>
+
+              <div className="flex-1 overflow-y-auto space-y-1.5 pb-2">
+                <button
+                  onClick={() => {
+                    setFilter({ ...filter, tag: '' });
+                    setShowTagModal(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    filter.tag === ''
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                      : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'
+                  }`}
+                >
+                  Tüm Etiketler
+                  {filter.tag === '' && <Check className="w-4 h-4" />}
+                </button>
+
+                {allTags.map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => {
+                      setFilter({ ...filter, tag: t });
+                      setShowTagModal(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      filter.tag === t
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    #{t}
+                    {filter.tag === t && <Check className="w-4 h-4" />}
+                  </button>
+                ))}
+
+                {allTags.length === 0 && (
+                  <p className="text-2xs text-slate-500 text-center py-6">Henüz hiç etiket eklenmemiş.</p>
+                )}
+
+                {/* Favourites lives here now — it's a filter like any other, and
+                    keeping it out of the top row is what lets the two triggers
+                    split the width evenly. */}
+                <div className="pt-3 mt-3 border-t border-slate-800/60">
+                  <button
+                    onClick={() => setFilter({ ...filter, onlyFavorites: !filter.onlyFavorites })}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      filter.onlyFavorites
+                        ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                        : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Heart className={`w-4 h-4 ${filter.onlyFavorites ? 'fill-rose-500 text-rose-400' : 'text-slate-500'}`} />
+                      Sadece Favoriler
+                    </span>
+                    {filter.onlyFavorites && <Check className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowTagModal(false)}
+                className="w-full text-center py-2.5 mt-3 bg-slate-800 hover:bg-slate-750 font-bold text-xs text-slate-300 rounded-xl transition-colors cursor-pointer shrink-0"
+              >
+                Kapat
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Sort Picker Modal */}
+      <AnimatePresence>
+        {showSortModal && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowSortModal(false)}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs z-40 cursor-pointer"
+            />
+
+            {/* Slide-up Sheet */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="absolute bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 rounded-t-[28px] z-50 p-6 flex flex-col shadow-2xl max-h-[75dvh] select-none"
+            >
+              {/* Pull handle bar */}
+              <div className="w-12 h-1.5 bg-slate-700/50 rounded-full mx-auto mb-4 shrink-0" />
+
+              <h3 className="text-sm font-display font-bold text-slate-100 flex items-center gap-2 mb-4 shrink-0">
+                <ArrowUpDown className="w-4 h-4 text-emerald-400" />
+                Sıralama
+              </h3>
+
+              <div className="flex-1 overflow-y-auto space-y-1.5 pb-2">
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      setFilter({ ...filter, sortBy: opt.value });
+                      setShowSortModal(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      filter.sortBy === opt.value
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    {opt.label}
+                    {filter.sortBy === opt.value && <Check className="w-4 h-4" />}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setShowSortModal(false)}
+                className="w-full text-center py-2.5 mt-3 bg-slate-800 hover:bg-slate-750 font-bold text-xs text-slate-300 rounded-xl transition-colors cursor-pointer shrink-0"
+              >
+                Kapat
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
