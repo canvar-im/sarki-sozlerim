@@ -1,6 +1,6 @@
 {
   "name": "Şarkı Sözlerim",
-  "description": "Şarkı sözlerinizi kaydedip düzenleyebileceğiniz, müzik bağlantılarını ekleyip dilediğinizce arayabileceğiniz modern şarkı arşivi.",
+  "description": "İzci kamp ateşi şarkı sözü arşivi. Sözleri kaydedin, arayın, etiketleyin ve söylerken otomatik kaydırmayla ekrandan takip edin. Tüm veriler yalnızca cihazda saklanır.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }

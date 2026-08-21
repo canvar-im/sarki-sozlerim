@@ -24,6 +24,7 @@ import {
   SearchCheck,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
   Settings,
   User,
   ChevronRight,
@@ -737,9 +738,22 @@ export default function App() {
                     <Settings className="w-4 h-4 text-emerald-400" />
                     Yedekleme ve Ayarlar
                   </h3>
-                  <p className="text-2xs text-slate-400 leading-normal mb-5">
+                  <p className="text-2xs text-slate-400 leading-normal mb-3">
                     Şarkı arşivinizi güvende tutmak için yedek alın veya daha önce aldığınız yedekleri geri yükleyin.
                   </p>
+
+                  {/* The archive lives only in localStorage. Uninstalling the app
+                      or clearing its data wipes everything with no recovery path,
+                      so this warning needs to be impossible to miss — not a line
+                      of grey body text. */}
+                  <div className="flex items-start gap-2.5 p-3 mb-5 rounded-xl bg-amber-500/10 border border-amber-500/25">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <p className="text-2xs text-amber-200/90 leading-relaxed">
+                      <span className="font-bold text-amber-300">Şarkılarınız yalnızca bu cihazda saklanır.</span>{' '}
+                      Uygulamayı kaldırmak veya uygulama verilerini temizlemek tüm arşivi
+                      geri döndürülemez şekilde siler. Düzenli olarak yedek indirin.
+                    </p>
+                  </div>
 
                   <button
                     onClick={() => {

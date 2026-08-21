@@ -1,5 +1,8 @@
-import * as mammoth from 'mammoth';
-import { Document, Packer, Paragraph, TextRun } from 'docx';
+// `mammoth` (.docx reading) and `docx` (.docx writing) are both heavyweight —
+// together they dominated the initial JS bundle even though most sessions never
+// import or export a Word file. They are loaded on first use instead, so the
+// app starts with only what the first screen actually needs. `word-extractor`
+// (legacy .doc) was already lazy for the same reason.
 
 export function normalizeLyricsText(text: string): string {
   return text
@@ -10,6 +13,7 @@ export function normalizeLyricsText(text: string): string {
 }
 
 export async function extractLyricsFromDocx(file: File): Promise<string> {
+  const mammoth = await import('mammoth');
   const arrayBuffer = await file.arrayBuffer();
   const result = await mammoth.extractRawText({ arrayBuffer });
 
@@ -46,6 +50,7 @@ export async function createLyricsDocxBlob(song: {
   lyrics: string;
   notes?: string;
 }): Promise<Blob> {
+  const { Document, Packer, Paragraph, TextRun } = await import('docx');
   const lyricText = normalizeLyricsText(song.lyrics);
   const lyricParagraphs = lyricText
     ? lyricText.split('\n').map(
